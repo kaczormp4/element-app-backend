@@ -1,3 +1,5 @@
+const { Op } = require("sequelize");
+
 const Element = require("../models/Element");
 const User = require("../models/User"); // Import User model
 
@@ -118,10 +120,8 @@ const ElementController = {
   async publishElement(req, res) {
     try {
       const { id } = req.params;
-      console.log("REQQQ", id);
 
       const userId = req.user.userId; // Assuming user is authenticated
-      console.log("USER ID", userId);
 
       // Find the element by its ID and check if it belongs to the current user
       const element = await Element.findOne({ where: { id, userId } });
@@ -189,7 +189,7 @@ const ElementController = {
       res.status(200).json({ element });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Error fetching element", error });
+      res.status(500).json({ message: "Error fetching element1", error });
     }
   },
 
@@ -198,13 +198,11 @@ const ElementController = {
     try {
       const { type, status } = req.query;
       const userId = req.user.userId; // Extract the authenticated user's ID from req.user
-      console.log("RES,", req.user);
 
       // Build a filter object dynamically based on query parameters
       const filter = { userId }; // Always filter by the authenticated user
       if (type) filter.type = type;
       if (status) filter.status = status;
-      console.log("FILTER", filter);
 
       // Find all elements matching the filter and include user data
       const elements = await Element.findAll({
@@ -221,6 +219,85 @@ const ElementController = {
     } catch (error) {
       console.error("Error fetching elements:", error);
       res.status(500).json({ message: "Error fetching elements", error });
+    }
+  },
+
+  async shareElement(req, res) {
+    try {
+      const { id } = req.params; // Element ID from the URL
+      const { sharedForUserIds } = req.body; // Array of user IDs to share with
+      const userId = req.user.userId; // Authenticated user ID
+
+      // Find the element
+      const element = await Element.findOne({ where: { id } });
+
+      if (!element) {
+        return res.status(404).json({ message: "Element not found" });
+      }
+
+      // Ensure the user is the owner of the element
+      if (element.userId !== userId) {
+        return res
+          .status(403)
+          .json({ message: "You are not the owner of this element" });
+      }
+
+      // Update the sharedForUserIds column
+      const updatedElement = await element.update({
+        sharedForUserIds: Array.from(
+          new Set([...element.sharedForUserIds, ...sharedForUserIds])
+        ), // Merge unique IDs
+      });
+
+      res.status(200).json({
+        message: "Element shared successfully",
+        element: updatedElement,
+      });
+    } catch (error) {
+      console.error("Error sharing element:", error);
+      res.status(500).json({ message: "Error sharing element", error });
+    }
+  },
+
+  // Get elements shared with the authenticated user
+  async getSharedElements(req, res) {
+    try {
+      const userId = parseInt(req.user.userId, 10); // Ensure userId is a valid integer
+
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Query the database for elements shared with the user
+      const sharedElements = await Element.findAll({
+        where: {
+          sharedForUserIds: {
+            [Op.contains]: [userId], // Check if userId exists in the array
+          },
+        },
+        include: {
+          model: User,
+          as: "owner",
+          attributes: ["id", "username"], // Include specific user fields
+        },
+      });
+
+      // Log and respond with the retrieved shared elements
+      res.status(200).json({ sharedElements });
+    } catch (error) {
+      console.error("Error fetching shared elements:", error);
+
+      // Check if the error is related to a type mismatch or invalid query
+      if (error.name === "SequelizeDatabaseError" && error.code === "22P02") {
+        return res.status(400).json({
+          message: "Invalid data type in the query",
+          error: error.message,
+        });
+      }
+
+      res
+        .status(500)
+        .json({ message: "Error fetching shared elements", error });
     }
   },
 };

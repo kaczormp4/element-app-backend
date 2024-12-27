@@ -43,6 +43,27 @@ app.use("/api/public", publicRoutes);
 //   }
 // })();
 
+// const { Sequelize } = require("sequelize");
+
+// (async () => {
+//   try {
+//     const queryInterface = sequelize.getQueryInterface(); // Get QueryInterface instance
+
+//     // Add the `sharedForUserIds` column to the `Elements` table
+//     await queryInterface.addColumn("Elements", "sharedForUserIds", {
+//       type: Sequelize.ARRAY(Sequelize.INTEGER), // Array of integers
+//       allowNull: true, // Allow null for existing records
+//       defaultValue: [], // Default to an empty array
+//     });
+
+//     console.log('Column "sharedForUserIds" added successfully.');
+//   } catch (error) {
+//     console.error("Error adding column:", error);
+//   } finally {
+//     await sequelize.close(); // Close the database connection
+//   }
+// })();
+
 // Synchronize Sequelize models with the database
 sequelize
   .sync({ force: false })

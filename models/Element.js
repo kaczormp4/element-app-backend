@@ -41,6 +41,10 @@ const Element = sequelize.define("Element", {
       key: "id",
     },
   },
+  sharedForUserIds: {
+    type: DataTypes.ARRAY(DataTypes.INTEGER), // Array of integers
+    defaultValue: [], // Default to an empty array
+  },
 });
 
 // Define the relationship: Element belongs to User

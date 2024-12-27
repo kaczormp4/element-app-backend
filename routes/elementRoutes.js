@@ -25,10 +25,16 @@ router.put(
   ElementController.unPublishElement
 );
 
+// Route to fetch shared elements
+router.get("/shared", authMiddleware, ElementController.getSharedElements);
+
 // Route to fetch a single element by ID
 router.get("/:id", authMiddleware, ElementController.getElement);
 
 // Route to fetch all elements with optional filters
 router.get("/", authMiddleware, ElementController.getElements);
+
+// Share element endpoint
+router.put("/:id/share", authMiddleware, ElementController.shareElement);
 
 module.exports = router;

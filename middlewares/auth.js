@@ -6,7 +6,6 @@ const authMiddleware = (req, res, next) => {
   const extractedToken = token?.startsWith("Bearer ")
     ? token.split(" ")[1]
     : token;
-  console.log("TOKEN", req.headers);
 
   if (!extractedToken)
     return res.status(403).json({ message: "Access denied" });
