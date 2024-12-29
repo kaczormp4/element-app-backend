@@ -71,6 +71,21 @@ const UserController = {
   //     });
   //     res.json({ message: 'Logged out successfully' });
   //   });
+
+  async logout(req, res) {
+    try {
+      // Clear the token if it's stored as a cookie
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      res.status(500).json({ message: "Error during logout", error });
+    }
+  },
 };
 
 module.exports = UserController;

@@ -7,6 +7,7 @@ const authMiddleware = require("../middlewares/auth"); // Optional: protect rout
 // Public routes
 router.post("/register", UserController.createUser);
 router.post("/login", UserController.loginUser);
+router.post("/logout", UserController.logout);
 
 // Protected route (JWT required)
 router.get("/profile", authMiddleware, (req, res) => {
